@@ -1,0 +1,2 @@
+python-openstackclient==6.6.0
+python-troveclient==8.4.0

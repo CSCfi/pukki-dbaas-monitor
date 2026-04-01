@@ -1,0 +1,74 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: openstack-db-monitor
+spec:
+  schedule: "0 */4 * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            app: openstack-db-monitor
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: db-monitor
+              image: image-registry.apps.2.rahti.csc.fi/<replace me>/db-monitor:latest
+              imagePullPolicy: Always
+              env:
+                - name: THRESHOLD_PERCENT
+                  value: "90"
+                - name: SMTP_HOST
+                  value: "smtp.pouta.csc.fi"
+                - name: SMTP_PORT
+                  value: "25"
+                - name: MAIL_FROM
+                  value: "<replace me>"
+                - name: MAIL_TO
+                  value: "<replace me>"
+                - name: OS_AUTH_TYPE
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-monitor-openstack
+                      key: OS_AUTH_TYPE
+                - name: OS_AUTH_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-monitor-openstack
+                      key: OS_AUTH_URL
+                - name: OS_IDENTITY_API_VERSION
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-monitor-openstack
+                      key: OS_IDENTITY_API_VERSION
+                - name: OS_REGION_NAME
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-monitor-openstack
+                      key: OS_REGION_NAME
+                - name: OS_INTERFACE
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-monitor-openstack
+                      key: OS_INTERFACE
+                - name: OS_APPLICATION_CREDENTIAL_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-monitor-openstack
+                      key: OS_APPLICATION_CREDENTIAL_ID
+                - name: OS_APPLICATION_CREDENTIAL_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      name: db-monitor-openstack
+                      key: OS_APPLICATION_CREDENTIAL_SECRET
+              resources:
+                requests:
+                  cpu: 100m
+                  memory: 128Mi
+                limits:
+                  cpu: 300m
+                  memory: 256Mi
